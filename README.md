@@ -113,8 +113,7 @@ the only argument provided. See below for examples.
 
 ### Additional Configuration
 
-The third argument is a keyword list, configuring the `RssWatcher.Subscription`
-that handles fetching and dispatching updates.
+Additional configuration can be provided to handle dispatching/fetching updates.
 
 - `:refresh_interval` - integer. How often the feed is checked, in seconds. Defautls to `60`.
 - `:rss_parser` - Atom/RSS 2.0 parser module. Defaults to `RssWatcher.Feed.Fiet`,
@@ -126,25 +125,21 @@ that handles fetching and dispatching updates.
 
 ```elixir
 {RssWatcher,
+  url: "http://example.com/rss",
+  callback: {Notifications, broadcast, ["#channel_id"]},
+}
+
+{RssWatcher,
   [
-    "http://example.com/rss",
-    {Notifications, broadcast, ["#channel_id"]},
-    refresh_interval: 60
+    url: "http://example.com/rss",
+    callback: fn xml -> Notifications.broadcast(xml) end,
   ]
 }
 
 {RssWatcher,
   [
-    "http://example.com/rss",
-    fn xml -> Notifications.broadcast(xml) end,
-    refresh_interval: 60
-  ]
-}
-
-{RssWatcher,
-  [
-    "http://example.com/rss",
-    &Notifications.broadcast/1,
+    url: "http://example.com/rss",
+    callback: &Notifications.broadcast/1,
     refresh_interval: 60
   ]
 }
