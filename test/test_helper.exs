@@ -26,6 +26,13 @@ defmodule Utils do
         <updated>#{NaiveDateTime.to_string(updated)}</updated>
         <summary>Some text.</summary>
       </entry>
+      <entry>
+        <title>More Atom-Powered Robots Run Amok</title>
+        <link href="http://example.org/2003/12/13/atom04"/>
+        <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6b</id>
+        <updated>#{NaiveDateTime.add(updated, 4, :second) |> NaiveDateTime.to_string()}</updated>
+        <summary>Some text.</summary>
+      </entry>
 
     </feed>
     """

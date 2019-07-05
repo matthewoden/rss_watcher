@@ -8,33 +8,44 @@ Online Docs: [https://hexdocs.pm/rss_watcher](https://hexdocs.pm/rss_watcher).
 
 ### Dependancies
 
-Add the following to your dependancies:
+Add the following to your dependencies:
 
 ```elixir
 {:rss_watcher, "~> 0.1.0"}
 ```
 
-For _easy mode_, you can use the provided default adapters to fetch and parse
-RSS feeds.
-
-`RssWatcher.HTTP.Tesla` is provided by default. To use, add the following
-dependancies to your dependancy list.
-
-```
-{:tesla, "~> 1.2.1"}, #
-```
-
-See module for `Tesla` configuration around middleware, and additional
-adapter options.
-
----
-
-For RSS parsing, `RssWatcher.Feed.Fiet` is provided by default,
-and handles parsing XML and timestamps. To use, add the following dependancies
-to your dependancy list.
+For _easy mode_, you can use the default adapters to fetch and parse
+RSS feeds. Just add the following to your dependancies, and you should be good
+to go.
 
 ```elixir
-{:fiet, "~> 0.2.1"}, # RSS and timestamp parsing.
+{:tesla, "~> 1.2.1"}, # For HTTP requests
+{:fiet, "~> 0.2.1"}, # For RSS parsing
+{:timex, "~> 3.0"}, # For timestamp parsing
+```
+
+And add `Timex` to your list of applications.
+
+```elixir
+extra_applications: [ ...,  :timex]
+```
+
+### Adapters
+
+`RssWatcher.HTTP.Tesla` is provided by default. To use, add the following
+dependancies to your dependency list. See module configuration around middleware, and additional
+adapter options.
+
+```elixir
+{:tesla, "~> 1.2.1"}
+```
+
+For RSS parsing, `RssWatcher.Feed.Fiet` is provided by default,
+and handles parsing XML and timestamps. To use, add the following dependencies
+to your dependency list.
+
+```elixir
+{:fiet, "~> 0.2.1"},
 {:timex, "~> 3.0"}
 ```
 
@@ -54,11 +65,8 @@ to your supervisor.
 ```elixir
 children = [
   {RssWatcher,
-    [
-      "http://example.com/rss",
-      {Notifications, broadcast, ["#channel_id"]},
-      refresh_interval: 60
-    ]
+      url: "http://example.com/rss",
+      callback: {Notifications, broadcast, ["#channel_id"]},
   }
 ]
 
@@ -77,20 +85,18 @@ Supervisor.start_link(children, strategy: :one_for_one)
 
 ...
 
-DynamicSupervisor.start_child(MyApp.RssSupervisor, {
-  RssWatcher,
-    [
-      "http://example.com/rss",
-      {Notifications, broadcast, ["#channel_id"]},
-      refresh_interval: 60
-    ]
-})
+DynamicSupervisor.start_child(
+  MyApp.RssSupervisor,
+  {RssWatcher,
+      url: "http://example.com/rss",
+      callback: {Notifications, broadcast, ["#channel_id"]}
+  }
+)
 
 ```
 
-Each `RssWatcher` worker takes a _url_, a _callback_, and
-_configuration_. The `RssWatcher` handles a single RSS feed.
-For multiple feeds, spawn additonal multiple `RssWatcher` processes.
+Each `RssWatcher` worker takes at least a _url_, and a _callback_. Additional
+configuration can be provided to use alternate adapters.
 
 ### Url
 
@@ -105,7 +111,7 @@ If `{module, function, arguments}` format, the callback will be dispatched with
 an additional argument - the parsed XML. Otherwise, the parsed XML will be
 the only argument provided. See below for examples.
 
-### Configuration
+### Additional Configuration
 
 The third argument is a keyword list, configuring the `RssWatcher.Subscription`
 that handles fetching and dispatching updates.

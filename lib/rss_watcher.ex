@@ -13,26 +13,37 @@ defmodule RssWatcher do
   {:rss_watcher, "~> 0.1.0"}
   ```
 
-  For _easy mode_, you can use the provided default adapters to fetch and parse
-  RSS feeds.
+  For _easy mode_, you can use the default adapters to fetch and parse
+  RSS feeds. Just add the following to your dependancies, and you should be good
+  to go.
+
+  ``` elixir
+  {:tesla, "~> 1.2.1"}, # For HTTP requests
+  {:fiet, "~> 0.2.1"}, # For RSS parsing
+  {:timex, "~> 3.0"}, # For timestamp parsing
+  ```
+
+  And add `Timex` to your list of applications.
+  ``` elixir
+  extra_applications: [ ...,  :timex]
+  ```
+
+  ### Adapters
 
   `RssWatcher.HTTP.Tesla` is provided by default. To use, add the following
-  dependancies to your dependency list.
-
-  ```
-  {:tesla, "~> 1.2.1"}, #
-  ```
-  See module for `Tesla` configuration around middleware, and additional
+  dependancies to your dependency list. See module configuration around middleware, and additional
   adapter options.
 
-  ---
+  ``` elixir
+  {:tesla, "~> 1.2.1"}
+  ```
 
   For RSS parsing, `RssWatcher.Feed.Fiet` is provided by default,
   and handles parsing XML and timestamps. To use, add the following dependencies
   to your dependency list.
 
   ``` elixir
-  {:fiet, "~> 0.2.1"}, # RSS and timestamp parsing.
+  {:fiet, "~> 0.2.1"},
   {:timex, "~> 3.0"}
   ```
 
@@ -57,11 +68,8 @@ defmodule RssWatcher do
   ``` elixir
   children = [
     {RssWatcher,
-      [
-        "http://example.com/rss",
-        {Notifications, broadcast, ["#channel_id"]},
-        refresh_interval: 60
-      ]
+        url: "http://example.com/rss",
+        callback: {Notifications, broadcast, ["#channel_id"]}
     }
   ]
 
@@ -73,7 +81,7 @@ defmodule RssWatcher do
   ``` elixir
 
   children = [
-  {DynamicSupervisor, strategy: :one_for_one, name: MyApp.RssSupervisor}
+    {DynamicSupervisor, strategy: :one_for_one, name: MyApp.RssSupervisor}
   ]
 
   Supervisor.start_link(children, strategy: :one_for_one)
@@ -84,24 +92,20 @@ defmodule RssWatcher do
     MyApp.RssSupervisor,
     {
       RssWatcher,
-      [
-        "http://example.com/rss",
-        {Notifications, broadcast, ["#channel_id"]},
-        refresh_interval: 60
-      ]
+        url: "http://example.com/rss",
+        callback: {Notifications, broadcast, ["#channel_id"]}
     }
   )
 
   ```
 
-  Each `RssWatcher` worker takes a _url_, a _callback_, and
-  _configuration_. The `RssWatcher` handles a single RSS feed.
-  For multiple feeds, spawn additonal multiple `RssWatcher` processes.
+  Each `RssWatcher` worker requires at least a _url_, and a _callback_. Additional
+  configuration can be provided to use alternate adapters.
 
-  ### Url
+  ### Url (required)
   The url should be a string, which resolves to an RSS feed.
 
-  ### Callback
+  ### Callback (required)
   The callback can be in the form of `{module, function, arguments}`, or
   an anonymous/suspended function.
 
@@ -109,7 +113,7 @@ defmodule RssWatcher do
   an additional argument - the parsed XML. Otherwise, the parsed XML will be
   the only argument provided. See below for examples.
 
-  ### Configuration
+  ### Additional Configuration
   The configuration is provided as a keyword list. The available options (and their defaults)
   are listed below
 
@@ -123,40 +127,42 @@ defmodule RssWatcher do
 
   ``` elixir
   {RssWatcher,
-    [
-      "http://example.com/rss",
-      {Notifications, broadcast, ["#channel_id"]},
-      refresh_interval: 60
-    ]
+    url: "http://example.com/rss",
+    callback: {Notifications, broadcast, ["#channel_id"]},
+    refresh_interval: 60
   }
 
   {RssWatcher,
-    [
-      "http://example.com/rss",
-      fn xml -> Notifications.broadcast(xml) end,
-      refresh_interval: 60
-    ]
+    url: "http://example.com/rss",
+    callback: fn xml -> Notifications.broadcast(xml) end,
+    refresh_interval: 60
   }
 
   {RssWatcher,
-    [
-      "http://example.com/rss",
-      &Notifications.broadcast/1,
-      refresh_interval: 60
-    ]
+    url: "http://example.com/rss",
+    callback: &Notifications.broadcast/1,
+    refresh_interval: 60
   }
   ```
   """
-  @spec start_link(url, callback, options) :: :ignore | {:error, any} | {:ok, pid}
-  def start_link(url, fun, opts \\ []) do
-    state = %{subscription: Subscription.new(url, fun, opts)}
-    GenServer.start_link(__MODULE__, state, name: __MODULE__)
+  @spec start_link(Keyword.t()) :: :ignore | {:error, any} | {:ok, pid}
+  def start_link(options) do
+    with {url, options} when not is_nil(url) <- Keyword.pop(options, :url),
+         {fun, options} when not is_nil(fun) <- Keyword.pop(options, :callback) do
+      state = %{subscription: Subscription.new(url, fun, options)}
+      GenServer.start_link(__MODULE__, state, name: __MODULE__)
+    else
+      _ ->
+        raise ArgumentError,
+          message:
+            ":url and :callback options are required. Provided options: #{inspect(options)}"
+    end
   end
 
   @impl true
   @doc false
   def init(state) do
-    schedule_poll(state.subscription.fetch_interval * 1000)
+    schedule_poll(state.subscription.refresh_interval * 1000)
     {:ok, state}
   end
 

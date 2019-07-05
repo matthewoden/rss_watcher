@@ -14,7 +14,7 @@ defmodule RssWatcher.Subscription do
   defstruct url: nil,
             refresh_interval: 60,
             updated_at: nil,
-            recent_titles: [],
+            recent_items: [],
             pending_updates: [],
             rss_parser: RssWatcher.Feed.Fiet,
             rss_parser_options: [],
@@ -22,14 +22,14 @@ defmodule RssWatcher.Subscription do
             http_client_options: [],
             callback: nil
 
-  @type recent_title :: {NaiveDateTime.t() | DateTime.t(), String.t()}
+  @type recent_item :: {NaiveDateTime.t() | DateTime.t(), String.t()}
   @type callback :: fun() | {module, atom, list}
   @type options :: Keyword.t()
   @type t :: %__MODULE__{
           url: String.t(),
           refresh_interval: integer,
           updated_at: NaiveDateTime.t() | DateTime.t(),
-          recent_titles: [recent_title],
+          recent_items: [recent_item],
           pending_updates: list,
           rss_parser: module,
           rss_parser_options: [],
@@ -69,12 +69,20 @@ defmodule RssWatcher.Subscription do
     with {:ok, xml} <- get_feed(subscription),
          {:ok, parsed} <- parse_feed(subscription, xml),
          true <- fresh?(subscription.updated_at, parsed.updated_at) do
-      pending_updates = Enum.filter(parsed.items, fn item -> fresh_item?(subscription, item) end)
+      pending_updates =
+        parsed.items
+        |> Enum.filter(fn item -> fresh_item?(subscription, item) end)
+        |> Enum.sort(fn a, b ->
+          case NaiveDateTime.compare(a.published_at, b.published_at) do
+            :lt -> true
+            _ -> false
+          end
+        end)
 
       subscription = %{
         subscription
         | pending_updates: pending_updates,
-          recent_titles: update_titles(subscription.recent_titles, pending_updates),
+          recent_items: update_titles(subscription.recent_items, pending_updates),
           updated_at: now()
       }
 
@@ -126,16 +134,21 @@ defmodule RssWatcher.Subscription do
   defp fresh_item?(subscription, item) do
     fresh = fresh?(subscription.updated_at, item.published_at)
 
-    sneaky_title = Enum.any?(subscription.recent_titles, fn {_, title} -> title == item.title end)
+    sneaky_update =
+      Enum.any?(subscription.recent_items, fn {_, id} ->
+        id == item.id || id == item.title
+      end)
 
-    fresh and not sneaky_title
+    fresh and not sneaky_update
   end
 
   defp update_titles(titles, updates) do
     updates
-    |> Enum.map(fn %{title: title, published_at: published_at} -> {published_at, title} end)
+    |> Enum.map(fn %{id: id, title: title, published_at: published_at} ->
+      {published_at, id || title}
+    end)
     |> Enum.concat(titles)
-    |> Enum.filter(fn {date, _} -> fresh?(date, yesterday()) end)
+    |> Enum.filter(fn {date, _} -> fresh?(yesterday(), date) end)
   end
 
   defp dispatch({m, f, a}, update), do: apply(m, f, a ++ [update])
