@@ -2,6 +2,7 @@ defmodule RssWatcher.Feed.Item do
   @moduledoc """
   Normalized item/entity within a `RssWatcher.Feed`.
   """
+  @moduledoc since: "0.1.0"
   @type t :: %__MODULE__{
           id: String.t(),
           title: String.t(),
@@ -45,6 +46,7 @@ defmodule RssWatcher.Feed do
   - RFC1123
   - RFC3339
   """
+  @moduledoc since: "0.1.0"
 
   @type xml :: String.t()
   @type options :: Keyword.t()
@@ -73,5 +75,6 @@ defmodule RssWatcher.Feed do
   @doc """
   Parse a string of XML.
   """
+  @doc since: "0.1.0"
   @callback parse_feed(String.t(), Keyword.t()) :: {:ok, Feed.t()} | {:error, term}
 end

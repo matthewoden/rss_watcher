@@ -10,6 +10,7 @@ defmodule RssWatcher.Subscription do
   This module should not be used directly, and instead rely on `RssWatcher`
   configuration for initialization and use.
   """
+  @moduledoc since: "0.1.0"
 
   defstruct url: nil,
             refresh_interval: 60,
@@ -41,6 +42,7 @@ defmodule RssWatcher.Subscription do
   @doc """
   Generates a new subscription
   """
+  @doc since: "0.1.0"
   @spec new(String.t(), callback, options) :: t
   def new(url, fun, opts \\ []) do
     {refresh_interval, opts} = Keyword.pop(opts, :refresh_interval, 60)
@@ -64,6 +66,7 @@ defmodule RssWatcher.Subscription do
   @doc """
   Finds updated items for a subscription, and stores them as pending updates.
   """
+  @doc since: "0.1.0"
   @spec find_updates(t) :: {:ok, t} | {:error, term}
   def find_updates(%__MODULE__{} = subscription) do
     with {:ok, xml} <- get_feed(subscription),
@@ -105,6 +108,7 @@ defmodule RssWatcher.Subscription do
   @doc """
   Dispatches all pending updates for a subscription.
   """
+  @doc since: "0.1.0"
   @spec dispatch_pending(t) :: t
   def dispatch_pending(subscription) do
     Enum.each(subscription.pending_updates, fn update ->

@@ -52,6 +52,8 @@ defmodule RssWatcher do
   extra_applications: [ ...  :timex]
   ```
   """
+  @moduledoc since: "0.1.0"
+
   use GenServer
   alias RssWatcher.{Subscription}
   require Logger
@@ -60,6 +62,7 @@ defmodule RssWatcher do
   @type callback :: {module, atom} | function
   @type options :: [refresh_interval: integer]
 
+  @doc since: "0.1.0"
   @doc """
   RssWatcher is a worker, so the recommended usage is to add it as a child
   to your supervisor.

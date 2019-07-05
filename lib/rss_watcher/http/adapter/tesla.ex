@@ -13,13 +13,10 @@ if Code.ensure_loaded?(Tesla) do
     You may need to add additional dependencies based on your HTTP adapter
     of choice. (hackney, etc)
 
-    Additional middleware and adapter configuration can be provided through
-    the `http_client_options` key in the `RssWatcher.Subscription` config.
 
-    ## Options
-    - `:adapter` - The tesla adpater to use
-    - `:middleware` - The tesla middleware to use
     """
+    @moduledoc since: "0.1.0"
+
     require Logger
 
     @behaviour RssWatcher.HTTP
@@ -30,6 +27,17 @@ if Code.ensure_loaded?(Tesla) do
             | {:error, {:not_xml, String.t()}}
             | {:error, {:unsuccessful_request, term}}
 
+    @doc """
+    Fetch HTTP data using `Tesla`
+
+    Additional middleware and adapter configuration can be provided through
+    the `http_client_options` key in the `RssWatcher.Subscription` config.
+
+    ## Options
+    - `:adapter` - The tesla HTTP adpater to use. Defaults to `:httpc`. Can be a `module` or a tuple of a `{module, options}`
+    - `:middleware` - The tesla middleware to use.
+    """
+    @doc since: "0.1.0"
     def get_feed(url, options \\ []) do
       with {:ok, %Tesla.Env{status: status, headers: headers, body: body}}
            when status == 200 <- Tesla.get(client(options), url),

@@ -11,6 +11,8 @@ if Code.ensure_loaded?(Fiet) and Code.ensure_loaded?(Timex) do
 
     And add `:timex` to your list of extra_applications.
     """
+    @moduledoc since: "0.1.0"
+
     alias RssWatcher.Feed
     require Logger
 
