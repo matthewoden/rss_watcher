@@ -1,6 +1,6 @@
-defmodule RssWatcher.Feed.Adapter.FietTest do
+defmodule RssWatcher.Feed.FietTest do
   use ExUnit.Case, async: true
-  alias RssWatcher.Feed.Adapter.Fiet
+  alias RssWatcher.Feed.Fiet
 
   test "it parses RSS 2.0 XML" do
     {:ok, parsed} = File.read!("./test/data/Rss2.xml") |> Fiet.parse_feed([])

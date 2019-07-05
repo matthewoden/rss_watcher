@@ -3,11 +3,12 @@ defmodule RssWatcher.Subscription do
   alias RssWatcher
 
   @moduledoc """
-  RSS Subscriptions contain the information needed to fetch, parse, and dispatch
-  updates for RSS feeds.
+  The logical
+  A `RssWatcher.Subscription` fetches, parses, and dispatches updates for RSS
+  feeds.
 
-  Should not be called directly, and instead rely on RssWatcher configurtation
-  for initialization.
+  This module should not be used directly, and instead rely on `RssWatcher`
+  configuration for initialization and use.
   """
 
   defstruct url: nil,
@@ -15,9 +16,9 @@ defmodule RssWatcher.Subscription do
             updated_at: nil,
             recent_titles: [],
             pending_updates: [],
-            rss_parser: RssWatcher.Feed.Adapter.Fiet,
+            rss_parser: RssWatcher.Feed.Fiet,
             rss_parser_options: [],
-            http_client: RssWatcher.HTTP.Adapter.Tesla,
+            http_client: RssWatcher.HTTP.Tesla,
             http_client_options: [],
             callback: nil
 
@@ -37,12 +38,15 @@ defmodule RssWatcher.Subscription do
           callback: callback
         }
 
+  @doc """
+  Generates a new subscription
+  """
   @spec new(String.t(), callback, options) :: t
   def new(url, fun, opts \\ []) do
     {refresh_interval, opts} = Keyword.pop(opts, :refresh_interval, 60)
-    {rss_parser, opts} = Keyword.pop(opts, :rss_parser, RssWatcher.Feed.Adapter.Fiet)
+    {rss_parser, opts} = Keyword.pop(opts, :rss_parser, RssWatcher.Feed.Fiet)
     {rss_parser_options, opts} = Keyword.pop(opts, :rss_parser_options, [])
-    {http_client, opts} = Keyword.pop(opts, :http_client, RssWatcher.HTTP.Adapter.Tesla)
+    {http_client, opts} = Keyword.pop(opts, :http_client, RssWatcher.HTTP.Tesla)
     {http_client_options, _opts} = Keyword.pop(opts, :http_client_options, [])
 
     struct(__MODULE__,

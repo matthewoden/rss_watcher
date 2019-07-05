@@ -1,5 +1,5 @@
-defmodule RssWatcher.HTTP.Adapter.TeslaTest do
-  alias RssWatcher.HTTP.Adapter.Tesla, as: HTTP
+defmodule RssWatcher.HTTP.TeslaTest do
+  alias RssWatcher.HTTP.Tesla, as: HTTP
   use ExUnit.Case, async: true
 
   setup do

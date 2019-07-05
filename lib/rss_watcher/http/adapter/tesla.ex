@@ -1,7 +1,8 @@
 if Code.ensure_loaded?(Tesla) do
-  defmodule RssWatcher.HTTP.Adapter.Tesla do
+  defmodule RssWatcher.HTTP.Tesla do
     @moduledoc """
-    Tesla-based adapter for http fetching. Used by default in subscriptions.
+    `Tesla` adapter for HTTP fetching. Used by default if no configuration is
+    provided.
 
     ## Installation
 
@@ -9,19 +10,19 @@ if Code.ensure_loaded?(Tesla) do
     ```
         {:tesla, "~> 1.2.1"}
     ```
-    You may need to add additional dependencies based on your http adapter
-    of choice.
+    You may need to add additional dependencies based on your HTTP adapter
+    of choice. (hackney, etc)
 
     Additional middleware and adapter configuration can be provided through
     the `http_client_options` key in the `RssWatcher.Subscription` config.
 
     ## Options
     - `:adapter` - The tesla adpater to use
-    - `:middleware - The tesla middleware to use
+    - `:middleware` - The tesla middleware to use
     """
     require Logger
 
-    @behaviour RssWatcher.HTTP.Adapter
+    @behaviour RssWatcher.HTTP
 
     @spec get_feed(String.t(), Keyword.t()) ::
             {:ok, String.t()}

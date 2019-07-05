@@ -7,7 +7,16 @@ defmodule RssWatcher.MixProject do
       version: "0.1.0",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      # Docs
+      name: "RssWatcher",
+      source_url: "https://github.com/matthewoden/rss_watcher",
+      homepage_url: "https://github.com/matthewoden/rss_watcher",
+      docs: [
+        # The main page in the docs
+        main: "RssWatcher",
+        extras: ["README.md"]
+      ]
     ]
   end
 
@@ -23,7 +32,8 @@ defmodule RssWatcher.MixProject do
       {:tesla, "~> 1.2.1", optional: true},
       {:jason, ">= 1.0.0", optional: true},
       {:timex, "~> 3.0", optional: true},
-      {:bypass, "~> 1.0", only: :test}
+      {:bypass, "~> 1.0", only: :test},
+      {:ex_doc, "~> 0.19", only: :dev, runtime: false}
     ]
   end
 end

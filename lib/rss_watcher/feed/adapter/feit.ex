@@ -1,5 +1,5 @@
 if Code.ensure_loaded?(Fiet) and Code.ensure_loaded?(Timex) do
-  defmodule RssWatcher.Feed.Adapter.Fiet do
+  defmodule RssWatcher.Feed.Fiet do
     @moduledoc """
     A Fiet + Timex based RSS parser. Used by default in subscriptions.
 
@@ -13,7 +13,8 @@ if Code.ensure_loaded?(Fiet) and Code.ensure_loaded?(Timex) do
     """
     alias RssWatcher.Feed
     require Logger
-    @behaviour RssWatcher.Feed.Adapter
+
+    @behaviour RssWatcher.Feed
 
     @impl true
     @spec parse_feed(String.t(), Keyword.t()) :: {:error, any} | {:ok, RssWatcher.Feed.t()}
