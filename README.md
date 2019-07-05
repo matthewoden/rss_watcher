@@ -130,17 +130,13 @@ Additional configuration can be provided to handle dispatching/fetching updates.
 }
 
 {RssWatcher,
-  [
-    url: "http://example.com/rss",
-    callback: fn xml -> Notifications.broadcast(xml) end,
-  ]
+  url: "http://example.com/rss",
+  callback: fn xml -> Notifications.broadcast(xml) end,
 }
 
 {RssWatcher,
-  [
-    url: "http://example.com/rss",
-    callback: &Notifications.broadcast/1,
-    refresh_interval: 60
-  ]
+  url: "http://example.com/rss",
+  callback: &Notifications.broadcast/1,
+  refresh_interval: 60
 }
 ```
