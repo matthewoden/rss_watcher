@@ -4,7 +4,7 @@ defmodule RssWatcher.MixProject do
   def project do
     [
       app: :rss_watcher,
-      version: "0.1.0",
+      version: "0.1.1",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -30,8 +30,7 @@ defmodule RssWatcher.MixProject do
   defp deps() do
     [
       {:fiet, "~> 0.2.1", optional: true},
-      {:tesla, "~> 1.2.1", optional: true},
-      {:jason, ">= 1.0.0", optional: true},
+      {:tesla, "~> 1.2", optional: true},
       {:timex, "~> 3.0", optional: true},
       {:bypass, "~> 1.0", only: :test},
       {:ex_doc, "~> 0.19", only: :dev, runtime: false}
